@@ -78,6 +78,10 @@ public class DummyStatistics implements Statistics {
         return base+12;
     }
 
+    public long getIdleTime() {
+        return base+13;
+    }
+
     public void reset() {
     }
 

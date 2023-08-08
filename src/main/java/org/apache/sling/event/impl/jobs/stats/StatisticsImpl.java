@@ -18,6 +18,7 @@
  */
 package org.apache.sling.event.impl.jobs.stats;
 
+import java.time.Clock;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.sling.event.jobs.Statistics;
@@ -34,11 +35,17 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
     private final AtomicLong queuedJobs = new AtomicLong();
 
     public StatisticsImpl() {
-        this(System.currentTimeMillis());
+        this(Clock.systemDefaultZone());
     }
 
     public StatisticsImpl(final long startTime) {
+        this(Clock.systemDefaultZone());
         this.startTime.set(startTime);
+    }
+
+    public StatisticsImpl(final Clock clock) {
+        super(clock);
+        this.startTime.set(this.clock.millis());
     }
 
     /**
@@ -71,6 +78,24 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
     @Override
     public long getNumberOfJobs() {
         return activeJobs.get() + queuedJobs.get();
+    }
+
+    /**
+     * @see org.apache.sling.event.jobs.Statistics#getIdleTime()
+     */
+    @Override
+    public long getIdleTime() {
+        final long lastActivatedTime = getLastActivatedJobTime();
+        final long lastFinishedTime = getLastFinishedJobTime();
+        if ( lastActivatedTime == -1 ) {
+            // No job has been activated, so the queue has been idle since start
+            return clock.millis() - startTime.get();
+        }
+        if ( lastFinishedTime == -1 || lastActivatedTime > lastFinishedTime ) {
+            // The queue is currently active
+            return 0;
+        }
+        return clock.millis() - lastFinishedTime;
     }
 
     /**
@@ -162,7 +187,7 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
      */
     @Override
     public synchronized void reset() {
-        this.startTime.set(System.currentTimeMillis());
+        this.startTime.set(this.clock.millis());
         super.reset();
     }
 }

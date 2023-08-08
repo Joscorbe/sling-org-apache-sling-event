@@ -73,6 +73,10 @@ public class EmptyStatistics implements Statistics {
         return 0;
     }
 
+    public long getIdleTime() {
+        return 0;
+    }
+
     public void reset() {
     }
 
