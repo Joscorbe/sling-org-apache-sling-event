@@ -44,6 +44,7 @@ class GaugeSupport {
     static final String ACTIVE_METRIC_SUFFIX = ".active.count";
     static final String AVG_WAITING_TIME_METRIC_SUFFIX = ".averageWaitingTime";
     static final String AVG_PROCESSING_TIME_METRIC_SUFFIX = ".averageProcessingTime";
+    static final String IDLE_TIME_METRIC_SUFFIX = ".idleTime";
 
     private final MetricRegistry metricRegistry;
     private final Map<String, Gauge<Long>> gaugeList = new HashMap<>();
@@ -119,6 +120,12 @@ class GaugeSupport {
 
                 public Long getValue() {
                     return queueStats.getAverageProcessingTime();
+                }
+            });
+            gaugeList.put(IDLE_TIME_METRIC_SUFFIX, new Gauge<Long>() {
+
+                public Long getValue() {
+                    return queueStats.getIdleTime();
                 }
             });
         }
