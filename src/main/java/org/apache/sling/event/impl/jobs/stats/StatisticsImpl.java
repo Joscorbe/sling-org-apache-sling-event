@@ -98,6 +98,16 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
         return clock.millis() - lastFinishedTime;
     }
 
+    @Override
+    public long getActiveJobRunningTime() {
+        final long lastActivatedTime = getLastActivatedJobTime();
+        final long lastFinishedTime = getLastFinishedJobTime();
+        if ( lastActivatedTime == -1 || lastFinishedTime >= lastActivatedTime ) {
+            return 0;
+        }
+        return clock.millis() - lastActivatedTime;
+    }
+
     /**
      * Add a finished job
      * @param jobTime The processing time for this job.
