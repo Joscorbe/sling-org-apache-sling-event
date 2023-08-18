@@ -82,6 +82,10 @@ public class DummyStatistics implements Statistics {
         return base+13;
     }
 
+    public long getActiveJobRunningTime() {
+        return base+14;
+    }
+
     public void reset() {
     }
 

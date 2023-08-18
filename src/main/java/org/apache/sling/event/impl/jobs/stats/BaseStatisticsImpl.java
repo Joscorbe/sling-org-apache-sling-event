@@ -18,12 +18,15 @@
  */
 package org.apache.sling.event.impl.jobs.stats;
 
+import java.time.Clock;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Base class for statistics implementations
  */
 public abstract class BaseStatisticsImpl {
+
+    protected final Clock clock;
 
     private final AtomicLong lastActivated = new AtomicLong(-1);
 
@@ -42,6 +45,17 @@ public abstract class BaseStatisticsImpl {
     private final AtomicLong failedJobs = new AtomicLong();
 
     private final AtomicLong cancelledJobs = new AtomicLong();
+
+    private final AtomicLong reassignedJobs = new AtomicLong();
+
+
+    protected BaseStatisticsImpl() {
+        this(Clock.systemDefaultZone());
+    }
+
+    protected BaseStatisticsImpl(final Clock clock) {
+        this.clock = clock;
+    }
 
     /**
      * @see org.apache.sling.event.jobs.Statistics#getNumberOfProcessedJobs()
@@ -114,7 +128,7 @@ public abstract class BaseStatisticsImpl {
      * @param jobTime The processing time for this job.
      */
     public synchronized void finishedJob(final long jobTime) {
-        this.lastFinished.set(System.currentTimeMillis());
+        this.lastFinished.set(clock.millis());
         this.processingTime.addAndGet(jobTime);
         this.processingCount.incrementAndGet();    
         this.finishedJobs.incrementAndGet();
@@ -127,7 +141,7 @@ public abstract class BaseStatisticsImpl {
     public synchronized void addActive(final long queueTime) {
         this.waitingCount.incrementAndGet();
         this.waitingTime.addAndGet(queueTime);
-        this.lastActivated.set(System.currentTimeMillis());
+        this.lastActivated.set(clock.millis());
     }
 
     /**
@@ -162,6 +176,7 @@ public abstract class BaseStatisticsImpl {
             this.finishedJobs.addAndGet(other.finishedJobs.get());
             this.failedJobs.addAndGet(other.failedJobs.get());
             this.cancelledJobs.addAndGet(other.cancelledJobs.get());
+            this.reassignedJobs.addAndGet(other.reassignedJobs.get());
         }
     }
 
@@ -178,6 +193,7 @@ public abstract class BaseStatisticsImpl {
         final long localFinishedJobs;
         final long localFailedJobs;
         final long localCancelledJobs;
+        final long localReassignedJobs;
         synchronized ( other ) {
             localLastActivated = other.lastActivated.get();
             localLastFinished = other.lastFinished.get();
@@ -188,6 +204,7 @@ public abstract class BaseStatisticsImpl {
             localFinishedJobs = other.finishedJobs.get();
             localFailedJobs = other.failedJobs.get();
             localCancelledJobs = other.cancelledJobs.get();
+            localReassignedJobs = other.reassignedJobs.get();
         }
         synchronized ( this ) {
             this.lastActivated.set(localLastActivated);
@@ -199,6 +216,7 @@ public abstract class BaseStatisticsImpl {
             this.finishedJobs.set(localFinishedJobs);
             this.failedJobs.set(localFailedJobs);
             this.cancelledJobs.set(localCancelledJobs);
+            this.reassignedJobs.set(localReassignedJobs);
         }
     }
 
@@ -215,5 +233,6 @@ public abstract class BaseStatisticsImpl {
         this.finishedJobs.set(0);
         this.failedJobs.set(0);
         this.cancelledJobs.set(0);
+        this.reassignedJobs.set(0);
     }
 }

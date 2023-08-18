@@ -77,6 +77,11 @@ public class EmptyStatistics implements Statistics {
         return 0;
     }
 
+    @Override
+    public long getActiveJobRunningTime() {
+        return 0;
+    }
+
     public void reset() {
     }
 

@@ -101,4 +101,8 @@ public abstract class AbstractJobStatistics extends StandardMBean implements
         return getStatistics().getIdleTime();
     }
 
+    public long getActiveJobRunningTime() {
+        return getStatistics().getActiveJobRunningTime();
+    }
+
 }
