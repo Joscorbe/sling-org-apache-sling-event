@@ -48,6 +48,8 @@ public abstract class BaseStatisticsImpl {
 
     private final AtomicLong reassignedJobs = new AtomicLong();
 
+    private final AtomicLong topicsInQueue = new AtomicLong();
+
 
     protected BaseStatisticsImpl() {
         this(Clock.systemDefaultZone());
@@ -121,6 +123,17 @@ public abstract class BaseStatisticsImpl {
      */
     public long getLastFinishedJobTime() {
         return lastFinished.get();
+    }
+
+    /**
+     * @see org.apache.sling.event.jobs.Statistics#getNumberOfTopics()
+     */
+    public long getNumberOfTopics() {
+        return topicsInQueue.get();
+    }
+
+    public void setNumberOfTopics(long topics) {
+        topicsInQueue.set(topics);
     }
 
     /**
