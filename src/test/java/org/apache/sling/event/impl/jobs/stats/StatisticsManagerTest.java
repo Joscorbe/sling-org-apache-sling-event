@@ -61,8 +61,8 @@ public class StatisticsManagerTest {
     @Test
     public void testGlobalGaugesAreRemovedOnDeactivate() {
         statisticsManager.jobQueued(TEST_QUEUE_NAME, TEST_TOPIC);
-        assertEquals("Less than 20 metrics present (10 global + 10 topic).",
-                20, metricRegistry.getMetrics().size());
+        assertEquals("Less than 22 metrics present (11 global + 11 topic).",
+                22, metricRegistry.getMetrics().size());
         statisticsManager.deactivate();
         assertEquals(0, metricRegistry.getMetrics().size());
     }

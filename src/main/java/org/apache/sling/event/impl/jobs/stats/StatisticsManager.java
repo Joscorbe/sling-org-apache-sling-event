@@ -19,6 +19,7 @@
 package org.apache.sling.event.impl.jobs.stats;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -197,6 +198,14 @@ public class StatisticsManager {
         this.globalStatistics.decQueued();
         if ( queueStats != null ) {
             queueStats.decQueued();
+        }
+    }
+
+    public void topicsAssignedToQueue(final String queueName, final Set<String> topics) {
+        final StatisticsImpl queueStats = getStatisticsForQueue(queueName);
+
+        if (queueStats != null) {
+            queueStats.setTopics(topics);
         }
     }
 

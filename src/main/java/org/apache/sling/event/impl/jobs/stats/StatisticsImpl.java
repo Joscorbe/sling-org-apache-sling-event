@@ -19,6 +19,7 @@
 package org.apache.sling.event.impl.jobs.stats;
 
 import java.time.Clock;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.sling.event.jobs.Statistics;
@@ -162,6 +163,10 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
         super.addActive(queueTime);
         this.queuedJobs.decrementAndGet();
         this.activeJobs.incrementAndGet();
+    }
+
+    public synchronized void setTopics(final Set<String> topics) {
+        this.setNumberOfTopics(topics.size());
     }
 
     /**
