@@ -82,6 +82,11 @@ public class EmptyStatistics implements Statistics {
         return 0;
     }
 
+    @Override
+    public long getNumberOfTopics() {
+        return 0;
+    }
+
     public void reset() {
     }
 

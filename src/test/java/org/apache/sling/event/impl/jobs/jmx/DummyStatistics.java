@@ -86,6 +86,11 @@ public class DummyStatistics implements Statistics {
         return base+14;
     }
 
+    @Override
+    public long getNumberOfTopics() {
+        return base+15;
+    }
+
     public void reset() {
     }
 
