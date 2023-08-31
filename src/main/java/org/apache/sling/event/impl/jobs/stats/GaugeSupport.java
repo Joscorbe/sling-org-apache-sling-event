@@ -47,6 +47,7 @@ class GaugeSupport {
     static final String IDLE_TIME_METRIC_SUFFIX = ".idleTime";
     static final String CURRENT_JOB_RUNNING_TIME_METRIC_SUFFIX = ".currentRunningTime";
     static final String QUEUE_TOPICS_METRIC_SUFFIX = ".topics.count";
+    static final String QUEUE_COUNT_METRIC_SUFFIX = ".queue.count";
 
     private final MetricRegistry metricRegistry;
     private final Map<String, Gauge<Long>> gaugeList = new HashMap<>();
@@ -140,6 +141,12 @@ class GaugeSupport {
 
                 public Long getValue() {
                     return queueStats.getNumberOfTopics();
+                }
+            });
+            gaugeList.put(QUEUE_COUNT_METRIC_SUFFIX, new Gauge<Long>() {
+                @Override
+                public Long getValue() {
+                    return queueStats.getNumberOfConfiguredQueues();
                 }
             });
         }

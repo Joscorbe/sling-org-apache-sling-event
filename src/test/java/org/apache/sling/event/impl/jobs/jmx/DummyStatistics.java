@@ -91,6 +91,11 @@ public class DummyStatistics implements Statistics {
         return base+15;
     }
 
+    @Override
+    public long getNumberOfConfiguredQueues() {
+        return base+16;
+    }
+
     public void reset() {
     }
 

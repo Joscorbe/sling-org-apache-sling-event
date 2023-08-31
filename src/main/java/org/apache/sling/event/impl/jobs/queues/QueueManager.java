@@ -265,6 +265,7 @@ public class QueueManager
                 if ( queue != null ) {
                     isNewQueue = true;
                     queues.put(queueInfo.queueName, queue);
+                    statisticsManager.setConfiguredQueues(queues.size());
                     ((QueuesMBeanImpl)queuesMBean).sendEvent(new QueueStatusEvent(queue, null));
                 }
             }
@@ -313,6 +314,7 @@ public class QueueManager
             // update mbeans
             ((QueuesMBeanImpl)queuesMBean).sendEvent(new QueueStatusEvent(queue, queue));
         }
+        statisticsManager.setConfiguredQueues(queues.size());
     }
 
     /**

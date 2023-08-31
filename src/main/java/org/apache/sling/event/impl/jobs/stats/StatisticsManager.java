@@ -226,4 +226,8 @@ public class StatisticsManager {
             gaugeSupport.shutdown();
         }
     }
+
+    public void setConfiguredQueues(int size) {
+        this.globalStatistics.setNumberOfConfiguredQueues(size);
+    }
 }

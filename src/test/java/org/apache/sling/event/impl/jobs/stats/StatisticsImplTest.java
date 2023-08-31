@@ -24,15 +24,34 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.commons.scheduler.Scheduler;
+import org.apache.sling.commons.threads.ThreadPool;
+import org.apache.sling.commons.threads.ThreadPoolManager;
+import org.apache.sling.event.impl.jobs.JobConsumerManager;
 import org.apache.sling.event.impl.jobs.config.JobManagerConfiguration;
+import org.apache.sling.event.impl.jobs.config.JobManagerConfigurationTestFactory;
+import org.apache.sling.event.impl.jobs.config.QueueConfigurationManager;
+import org.apache.sling.event.impl.jobs.jmx.QueuesMBeanImpl;
 import org.apache.sling.event.impl.jobs.queues.QueueJobCache;
+import org.apache.sling.event.impl.jobs.queues.QueueManager;
+import org.apache.sling.event.impl.support.Environment;
 import org.apache.sling.event.jobs.QueueConfiguration;
+import org.apache.sling.testing.mock.osgi.MockOsgi;
+import org.apache.sling.testing.mock.sling.MockSling;
+import org.apache.sling.testing.mock.sling.ResourceResolverType;
+import org.apache.sling.testing.mock.sling.builder.ContentBuilder;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.event.EventAdmin;
 
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class StatisticsImplTest {
 
@@ -280,5 +299,12 @@ public class StatisticsImplTest {
         s.setTopics(topics);
 
         assertEquals(3, s.getNumberOfTopics());
+    }
+
+    @Test public void testNumberOfConfiguredQueues() {
+        final StatisticsImpl s = new StatisticsImpl();
+
+        s.setNumberOfConfiguredQueues(5);
+        assertEquals(5, s.getNumberOfConfiguredQueues());
     }
 }
