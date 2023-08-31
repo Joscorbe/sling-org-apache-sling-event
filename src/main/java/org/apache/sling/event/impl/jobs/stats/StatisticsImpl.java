@@ -35,6 +35,8 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
 
     private final AtomicLong queuedJobs = new AtomicLong();
 
+    private final AtomicLong numberOfQueues = new AtomicLong();
+
     public StatisticsImpl() {
         this(Clock.systemDefaultZone());
     }
@@ -107,6 +109,15 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
             return 0;
         }
         return clock.millis() - lastActivatedTime;
+    }
+
+    public void setNumberOfConfiguredQueues(int size) {
+        this.numberOfQueues.set(size);
+    }
+
+    @Override
+    public long getNumberOfConfiguredQueues() {
+        return this.numberOfQueues.get();
     }
 
     /**

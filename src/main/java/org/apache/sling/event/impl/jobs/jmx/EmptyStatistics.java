@@ -87,6 +87,11 @@ public class EmptyStatistics implements Statistics {
         return 0;
     }
 
+    @Override
+    public long getNumberOfConfiguredQueues() {
+        return 0;
+    }
+
     public void reset() {
     }
 
