@@ -18,7 +18,6 @@
  */
 package org.apache.sling.event.impl.jobs.stats;
 
-import java.time.Clock;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -38,17 +37,11 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
     private final AtomicLong numberOfQueues = new AtomicLong();
 
     public StatisticsImpl() {
-        this(Clock.systemDefaultZone());
+        this.startTime.set(getCurrentTimeMillis());
     }
 
     public StatisticsImpl(final long startTime) {
-        this(Clock.systemDefaultZone());
         this.startTime.set(startTime);
-    }
-
-    public StatisticsImpl(final Clock clock) {
-        super(clock);
-        this.startTime.set(this.clock.millis());
     }
 
     /**
@@ -92,13 +85,13 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
         final long lastFinishedTime = getLastFinishedJobTime();
         if ( lastActivatedTime == -1 ) {
             // No job has been activated, so the queue has been idle since start
-            return clock.millis() - startTime.get();
+            return getCurrentTimeMillis() - startTime.get();
         }
         if ( lastFinishedTime == -1 || lastActivatedTime > lastFinishedTime ) {
             // The queue is currently active
             return 0;
         }
-        return clock.millis() - lastFinishedTime;
+        return getCurrentTimeMillis() - lastFinishedTime;
     }
 
     @Override
@@ -108,7 +101,7 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
         if ( lastActivatedTime == -1 || lastFinishedTime >= lastActivatedTime ) {
             return 0;
         }
-        return clock.millis() - lastActivatedTime;
+        return getCurrentTimeMillis() - lastActivatedTime;
     }
 
     public void setNumberOfConfiguredQueues(int size) {
@@ -213,7 +206,7 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
      */
     @Override
     public synchronized void reset() {
-        this.startTime.set(this.clock.millis());
+        this.startTime.set(this.getCurrentTimeMillis());
         super.reset();
     }
 }

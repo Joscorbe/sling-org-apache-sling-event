@@ -26,8 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class BaseStatisticsImpl {
 
-    protected final Clock clock;
-
     private final AtomicLong lastActivated = new AtomicLong(-1);
 
     private final AtomicLong lastFinished = new AtomicLong(-1);
@@ -49,15 +47,6 @@ public abstract class BaseStatisticsImpl {
     private final AtomicLong reassignedJobs = new AtomicLong();
 
     private final AtomicLong topicsInQueue = new AtomicLong();
-
-
-    protected BaseStatisticsImpl() {
-        this(Clock.systemDefaultZone());
-    }
-
-    protected BaseStatisticsImpl(final Clock clock) {
-        this.clock = clock;
-    }
 
     /**
      * @see org.apache.sling.event.jobs.Statistics#getNumberOfProcessedJobs()
@@ -141,7 +130,7 @@ public abstract class BaseStatisticsImpl {
      * @param jobTime The processing time for this job.
      */
     public synchronized void finishedJob(final long jobTime) {
-        this.lastFinished.set(clock.millis());
+        this.lastFinished.set(getCurrentTimeMillis());
         this.processingTime.addAndGet(jobTime);
         this.processingCount.incrementAndGet();    
         this.finishedJobs.incrementAndGet();
@@ -154,7 +143,7 @@ public abstract class BaseStatisticsImpl {
     public synchronized void addActive(final long queueTime) {
         this.waitingCount.incrementAndGet();
         this.waitingTime.addAndGet(queueTime);
-        this.lastActivated.set(clock.millis());
+        this.lastActivated.set(getCurrentTimeMillis());
     }
 
     /**
@@ -247,5 +236,9 @@ public abstract class BaseStatisticsImpl {
         this.failedJobs.set(0);
         this.cancelledJobs.set(0);
         this.reassignedJobs.set(0);
+    }
+
+    protected long getCurrentTimeMillis() {
+        return System.currentTimeMillis();
     }
 }

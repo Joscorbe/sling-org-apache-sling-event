@@ -216,63 +216,73 @@ public class StatisticsImplTest {
     }
 
     @Test public void testIdleTimeWithoutJobExecution() {
-        Clock mockClock = mock(Clock.class);
-        when(mockClock.millis()).thenReturn(1690000000000L);
+        //Clock mockClock = mock(Clock.class);
+        //when(mockClock.millis()).thenReturn(1690000000000L);
 
-        final StatisticsImpl s = new StatisticsImpl(mockClock);
+        final StatisticsTestImpl s = new StatisticsTestImpl(1690000000000L);
         assertEquals(0L, s.getIdleTime());
 
-        when(mockClock.millis()).thenReturn(1690000000500L);
+        //when(mockClock.millis()).thenReturn(1690000000500L);
+        s.setFakeTimeMillis(1690000000500L);
         assertEquals(500L, s.getIdleTime());
 
-        when(mockClock.millis()).thenReturn(1690000001500L);
+        //when(mockClock.millis()).thenReturn(1690000001500L);
+        s.setFakeTimeMillis(1690000001500L);
         assertEquals(1500L, s.getIdleTime());
     }
 
     @Test public void testIdleTimeDuringActiveJob() {
-        Clock mockClock = mock(Clock.class);
-        when(mockClock.millis()).thenReturn(1690000000000L);
+        //Clock mockClock = mock(Clock.class);
+        //when(mockClock.millis()).thenReturn(1690000000000L);
 
-        final StatisticsImpl s = new StatisticsImpl(mockClock);
+        final StatisticsTestImpl s = new StatisticsTestImpl(1690000000000L);
 
-        when(mockClock.millis()).thenReturn(1690000001000L);
+        //when(mockClock.millis()).thenReturn(1690000001000L);
+        s.setFakeTimeMillis(1690000001000L);
         assertEquals(1000L, s.getIdleTime());
 
         // Job starts after 1s in queue
         s.addActive(1000);
         assertEquals(0L, s.getIdleTime()); // Not idle, as job is running
 
-        when(mockClock.millis()).thenReturn(1690000002000L);
+        //when(mockClock.millis()).thenReturn(1690000002000L);
+        s.setFakeTimeMillis(1690000002000L);
         assertEquals(0L, s.getIdleTime());  // Not idle while a job is running
 
-        when(mockClock.millis()).thenReturn(1690000005000L);
+        //when(mockClock.millis()).thenReturn(1690000005000L);
+        s.setFakeTimeMillis(1690000005000L);
 
         // Job finishes after 3 seconds of execution
         s.finishedJob(3000);
         assertEquals(0L, s.getIdleTime());  // Not idle just after finishing a job
 
-        when(mockClock.millis()).thenReturn(1690000015000L);
+        //when(mockClock.millis()).thenReturn(1690000015000L);
+        s.setFakeTimeMillis(1690000015000L);
         assertEquals(10000L, s.getIdleTime());
     }
 
     @Test public void testActiveJobRunningTime() {
-        Clock mockClock = mock(Clock.class);
-        when(mockClock.millis()).thenReturn(1690000000000L);
+        //Clock mockClock = mock(Clock.class);
+        //when(mockClock.millis()).thenReturn(1690000000000L);
 
-        final StatisticsImpl s = new StatisticsImpl(mockClock);
+        final StatisticsTestImpl s = new StatisticsTestImpl(1690000000000L);
 
-        when(mockClock.millis()).thenReturn(1690000001000L);
+        //when(mockClock.millis()).thenReturn(1690000001000L);
+        s.setFakeTimeMillis(1690000001000L);
 
         s.addActive(1000);
         assertEquals(0L, s.getActiveJobRunningTime());
 
-        when(mockClock.millis()).thenReturn(1690000002000L);
+        //when(mockClock.millis()).thenReturn(1690000002000L);
+        s.setFakeTimeMillis(1690000002000L);
         assertEquals(1000L, s.getActiveJobRunningTime());
 
-        when(mockClock.millis()).thenReturn(1690000005000L);
+        //when(mockClock.millis()).thenReturn(1690000005000L);
+        s.setFakeTimeMillis(1690000005000L);
         assertEquals(4000L, s.getActiveJobRunningTime());
 
-        when(mockClock.millis()).thenReturn(1690000006000L);
+        //when(mockClock.millis()).thenReturn(1690000006000L);
+        s.setFakeTimeMillis(1690000006000L);
         s.finishedJob(5000);
         assertEquals(0L, s.getActiveJobRunningTime());
     }
@@ -306,5 +316,24 @@ public class StatisticsImplTest {
 
         s.setNumberOfConfiguredQueues(5);
         assertEquals(5, s.getNumberOfConfiguredQueues());
+    }
+
+    private class StatisticsTestImpl extends StatisticsImpl {
+
+        long fakeTimeMillis = 0;
+
+        public StatisticsTestImpl(long startTime) {
+            super(startTime);
+            fakeTimeMillis = startTime;
+        }
+
+        @Override
+        protected long getCurrentTimeMillis() {
+            return fakeTimeMillis;
+        }
+
+        public void setFakeTimeMillis(long fakeTimeMillis) {
+            this.fakeTimeMillis = fakeTimeMillis;
+        }
     }
 }
