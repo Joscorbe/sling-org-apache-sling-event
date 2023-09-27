@@ -201,6 +201,15 @@ public class StatisticsManager {
         }
     }
 
+    public void jobReassigned(final String queueName, final String topic) {
+        final StatisticsImpl queueStats = getStatisticsForQueue(queueName);
+
+        this.globalStatistics.incReassigned();
+        if ( queueStats != null ) {
+            queueStats.incReassigned();
+        }
+    }
+
     public void topicsAssignedToQueue(final String queueName, final Set<String> topics) {
         final StatisticsImpl queueStats = getStatisticsForQueue(queueName);
 

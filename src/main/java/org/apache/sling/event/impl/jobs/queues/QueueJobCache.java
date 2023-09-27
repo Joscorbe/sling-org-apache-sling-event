@@ -198,6 +198,7 @@ public class QueueJobCache {
                             }
                         } else {
                             statisticsManager.jobDequeued(queue.getName(), handler.getJob().getTopic());
+                            statisticsManager.jobReassigned(queue.getName(), handler.getJob().getTopic());
                             // no consumer on this instance, assign to another instance
                             handler.reassign();
 

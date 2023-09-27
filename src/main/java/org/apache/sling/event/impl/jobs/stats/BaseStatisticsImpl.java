@@ -18,7 +18,6 @@
  */
 package org.apache.sling.event.impl.jobs.stats;
 
-import java.time.Clock;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -101,6 +100,13 @@ public abstract class BaseStatisticsImpl {
     }
 
     /**
+     * @see org.apache.sling.event.jobs.Statistics#getNumberOfReassignedJobs()
+     */
+    public long getNumberOfReassignedJobs() {
+        return reassignedJobs.get();
+    }
+
+    /**
      * @see org.apache.sling.event.jobs.Statistics#getLastActivatedJobTime()
      */
     public long getLastActivatedJobTime() {
@@ -158,6 +164,13 @@ public abstract class BaseStatisticsImpl {
      */
     public synchronized void cancelledJob() {
         this.cancelledJobs.incrementAndGet();
+    }
+
+    /**
+     * Job is reassigned
+     */
+    public void incReassigned() {
+        this.reassignedJobs.incrementAndGet();
     }
 
     /**
