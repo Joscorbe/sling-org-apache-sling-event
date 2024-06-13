@@ -18,10 +18,24 @@
  */
 package org.apache.sling.event.impl.jobs.stats;
 
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.event.impl.jobs.config.JobManagerConfiguration;
+import org.apache.sling.event.impl.jobs.queues.QueueJobCache;
+import org.apache.sling.event.jobs.QueueConfiguration;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class StatisticsImplTest {
 
@@ -41,6 +55,8 @@ public class StatisticsImplTest {
         assertEquals(-1, s.getLastFinishedJobTime());
         assertEquals(0, s.getAverageWaitingTime());
         assertEquals(0, s.getAverageProcessingTime());
+        assertTrue(s.getIdleTime() < 100);
+        assertEquals(0, s.getActiveJobRunningTime());
     }
 
     @Test public void testInitStartTime() {
@@ -57,6 +73,7 @@ public class StatisticsImplTest {
         assertEquals(-1, s.getLastFinishedJobTime());
         assertEquals(0, s.getAverageWaitingTime());
         assertEquals(0, s.getAverageProcessingTime());
+        assertEquals(System.currentTimeMillis() - 7000, s.getIdleTime());
     }
 
     @Test public void reset() {
@@ -76,6 +93,8 @@ public class StatisticsImplTest {
         assertEquals(-1, s.getLastFinishedJobTime());
         assertEquals(0, s.getAverageWaitingTime());
         assertEquals(0, s.getAverageProcessingTime());
+        assertTrue(s.getIdleTime() < 100);
+        assertEquals(0, s.getActiveJobRunningTime());
     }
 
     @Test public void testJobFinished() {
@@ -178,5 +197,143 @@ public class StatisticsImplTest {
         assertEquals(-1L, s.getLastFinishedJobTime());
         assertTrue(s.getLastActivatedJobTime() >= now);
         assertTrue(s.getLastActivatedJobTime() <= System.currentTimeMillis());
+    }
+
+    @Test public void testIdleTimeWithoutJobExecution() {
+        //Clock mockClock = mock(Clock.class);
+        //when(mockClock.millis()).thenReturn(1690000000000L);
+
+        final StatisticsTestImpl s = new StatisticsTestImpl(1690000000000L);
+        assertEquals(0L, s.getIdleTime());
+
+        //when(mockClock.millis()).thenReturn(1690000000500L);
+        s.setFakeTimeMillis(1690000000500L);
+        assertEquals(500L, s.getIdleTime());
+
+        //when(mockClock.millis()).thenReturn(1690000001500L);
+        s.setFakeTimeMillis(1690000001500L);
+        assertEquals(1500L, s.getIdleTime());
+    }
+
+    @Test public void testIdleTimeDuringActiveJob() {
+        //Clock mockClock = mock(Clock.class);
+        //when(mockClock.millis()).thenReturn(1690000000000L);
+
+        final StatisticsTestImpl s = new StatisticsTestImpl(1690000000000L);
+
+        //when(mockClock.millis()).thenReturn(1690000001000L);
+        s.setFakeTimeMillis(1690000001000L);
+        assertEquals(1000L, s.getIdleTime());
+
+        // Job starts after 1s in queue
+        s.addActive(1000);
+        assertEquals(0L, s.getIdleTime()); // Not idle, as job is running
+
+        //when(mockClock.millis()).thenReturn(1690000002000L);
+        s.setFakeTimeMillis(1690000002000L);
+        assertEquals(0L, s.getIdleTime());  // Not idle while a job is running
+
+        //when(mockClock.millis()).thenReturn(1690000005000L);
+        s.setFakeTimeMillis(1690000005000L);
+
+        // Job finishes after 3 seconds of execution
+        s.finishedJob(3000);
+        assertEquals(0L, s.getIdleTime());  // Not idle just after finishing a job
+
+        //when(mockClock.millis()).thenReturn(1690000015000L);
+        s.setFakeTimeMillis(1690000015000L);
+        assertEquals(10000L, s.getIdleTime());
+    }
+
+    @Test public void testActiveJobRunningTime() {
+        //Clock mockClock = mock(Clock.class);
+        //when(mockClock.millis()).thenReturn(1690000000000L);
+
+        final StatisticsTestImpl s = new StatisticsTestImpl(1690000000000L);
+
+        //when(mockClock.millis()).thenReturn(1690000001000L);
+        s.setFakeTimeMillis(1690000001000L);
+
+        s.addActive(1000);
+        assertEquals(0L, s.getActiveJobRunningTime());
+
+        //when(mockClock.millis()).thenReturn(1690000002000L);
+        s.setFakeTimeMillis(1690000002000L);
+        assertEquals(1000L, s.getActiveJobRunningTime());
+
+        //when(mockClock.millis()).thenReturn(1690000005000L);
+        s.setFakeTimeMillis(1690000005000L);
+        assertEquals(4000L, s.getActiveJobRunningTime());
+
+        //when(mockClock.millis()).thenReturn(1690000006000L);
+        s.setFakeTimeMillis(1690000006000L);
+        s.finishedJob(5000);
+        assertEquals(0L, s.getActiveJobRunningTime());
+    }
+
+    @Test public void testNumberOfTopicsPerQueue() {
+        ResourceResolver mockResolver = mock(ResourceResolver.class);
+        JobManagerConfiguration mockConfiguration = mock(JobManagerConfiguration.class);
+        StatisticsManager mockStatisticsManager = mock(StatisticsManager.class);
+
+        when(mockConfiguration.createResourceResolver()).thenReturn(mockResolver);
+        when(mockResolver.getResource(anyString())).thenReturn(null);
+
+        String queueName = "testQueue";
+        Set<String> topics = new HashSet<>(Arrays.asList("topic1", "topic2", "topic3"));
+        new QueueJobCache(mockConfiguration, queueName, mockStatisticsManager, QueueConfiguration.Type.UNORDERED, topics);
+
+        verify(mockStatisticsManager, times(1)).topicsAssignedToQueue(eq(queueName), eq(topics));
+    }
+
+    @Test public void testTopicCountMetric() {
+        final StatisticsImpl s = new StatisticsImpl();
+
+        Set<String> topics = new HashSet<>(Arrays.asList("topic1", "topic2", "topic3"));
+        s.setTopics(topics);
+
+        assertEquals(3, s.getNumberOfTopics());
+    }
+
+    @Test public void testNumberOfConfiguredQueues() {
+        final StatisticsImpl s = new StatisticsImpl();
+
+        s.setNumberOfConfiguredQueues(5);
+        assertEquals(5, s.getNumberOfConfiguredQueues());
+    }
+
+    @Test
+    public void testNumberOfJobsReassigned() {
+        final StatisticsImpl s = new StatisticsImpl();
+
+        assertEquals(0, s.getNumberOfReassignedJobs());
+
+        s.incReassigned();
+        assertEquals(1, s.getNumberOfReassignedJobs());
+
+        s.incReassigned();
+        assertEquals(2, s.getNumberOfReassignedJobs());
+
+        s.reset();
+        assertEquals(0, s.getNumberOfReassignedJobs());
+    }
+
+    private class StatisticsTestImpl extends StatisticsImpl {
+
+        long fakeTimeMillis = 0;
+
+        public StatisticsTestImpl(long startTime) {
+            super(startTime);
+            fakeTimeMillis = startTime;
+        }
+
+        @Override
+        protected long getCurrentTimeMillis() {
+            return fakeTimeMillis;
+        }
+
+        public void setFakeTimeMillis(long fakeTimeMillis) {
+            this.fakeTimeMillis = fakeTimeMillis;
+        }
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.sling.event.impl.jobs.stats;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.sling.event.jobs.Statistics;
@@ -33,8 +34,10 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
 
     private final AtomicLong queuedJobs = new AtomicLong();
 
+    private final AtomicLong numberOfQueues = new AtomicLong();
+
     public StatisticsImpl() {
-        this(System.currentTimeMillis());
+        this.startTime.set(getCurrentTimeMillis());
     }
 
     public StatisticsImpl(final long startTime) {
@@ -71,6 +74,43 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
     @Override
     public long getNumberOfJobs() {
         return activeJobs.get() + queuedJobs.get();
+    }
+
+    /**
+     * @see org.apache.sling.event.jobs.Statistics#getIdleTime()
+     */
+    @Override
+    public long getIdleTime() {
+        final long lastActivatedTime = getLastActivatedJobTime();
+        final long lastFinishedTime = getLastFinishedJobTime();
+        if ( lastActivatedTime == -1 ) {
+            // No job has been activated, so the queue has been idle since start
+            return getCurrentTimeMillis() - startTime.get();
+        }
+        if ( lastFinishedTime == -1 || lastActivatedTime > lastFinishedTime ) {
+            // The queue is currently active
+            return 0;
+        }
+        return getCurrentTimeMillis() - lastFinishedTime;
+    }
+
+    @Override
+    public long getActiveJobRunningTime() {
+        final long lastActivatedTime = getLastActivatedJobTime();
+        final long lastFinishedTime = getLastFinishedJobTime();
+        if ( lastActivatedTime == -1 || lastFinishedTime >= lastActivatedTime ) {
+            return 0;
+        }
+        return getCurrentTimeMillis() - lastActivatedTime;
+    }
+
+    public void setNumberOfConfiguredQueues(int size) {
+        this.numberOfQueues.set(size);
+    }
+
+    @Override
+    public long getNumberOfConfiguredQueues() {
+        return this.numberOfQueues.get();
     }
 
     /**
@@ -129,6 +169,10 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
         this.activeJobs.incrementAndGet();
     }
 
+    public synchronized void setTopics(final Set<String> topics) {
+        this.setNumberOfTopics(topics.size());
+    }
+
     /**
      * Add another statistics information.
      */
@@ -162,7 +206,7 @@ public class StatisticsImpl extends BaseStatisticsImpl implements Statistics {
      */
     @Override
     public synchronized void reset() {
-        this.startTime.set(System.currentTimeMillis());
+        this.startTime.set(this.getCurrentTimeMillis());
         super.reset();
     }
 }

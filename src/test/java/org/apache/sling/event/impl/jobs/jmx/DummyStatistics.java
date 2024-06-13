@@ -78,6 +78,24 @@ public class DummyStatistics implements Statistics {
         return base+12;
     }
 
+    public long getIdleTime() {
+        return base+13;
+    }
+
+    public long getActiveJobRunningTime() {
+        return base+14;
+    }
+
+    @Override
+    public long getNumberOfTopics() {
+        return base+15;
+    }
+
+    @Override
+    public long getNumberOfConfiguredQueues() {
+        return base+16;
+    }
+
     public void reset() {
     }
 

@@ -73,6 +73,25 @@ public class EmptyStatistics implements Statistics {
         return 0;
     }
 
+    public long getIdleTime() {
+        return 0;
+    }
+
+    @Override
+    public long getActiveJobRunningTime() {
+        return 0;
+    }
+
+    @Override
+    public long getNumberOfTopics() {
+        return 0;
+    }
+
+    @Override
+    public long getNumberOfConfiguredQueues() {
+        return 0;
+    }
+
     public void reset() {
     }
 

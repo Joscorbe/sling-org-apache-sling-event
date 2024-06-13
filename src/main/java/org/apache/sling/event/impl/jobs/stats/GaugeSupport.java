@@ -44,6 +44,11 @@ class GaugeSupport {
     static final String ACTIVE_METRIC_SUFFIX = ".active.count";
     static final String AVG_WAITING_TIME_METRIC_SUFFIX = ".averageWaitingTime";
     static final String AVG_PROCESSING_TIME_METRIC_SUFFIX = ".averageProcessingTime";
+    static final String IDLE_TIME_METRIC_SUFFIX = ".idleTime";
+    static final String CURRENT_JOB_RUNNING_TIME_METRIC_SUFFIX = ".currentRunningTime";
+    static final String QUEUE_TOPICS_METRIC_SUFFIX = ".topics.count";
+    static final String QUEUE_COUNT_METRIC_SUFFIX = ".queue.count";
+    static final String REASSIGNED_METRIC_SUFFIX = ".reassigned.count";
 
     private final MetricRegistry metricRegistry;
     private final Map<String, Gauge<Long>> gaugeList = new HashMap<>();
@@ -119,6 +124,36 @@ class GaugeSupport {
 
                 public Long getValue() {
                     return queueStats.getAverageProcessingTime();
+                }
+            });
+            gaugeList.put(IDLE_TIME_METRIC_SUFFIX, new Gauge<Long>() {
+
+                public Long getValue() {
+                    return queueStats.getIdleTime();
+                }
+            });
+            gaugeList.put(CURRENT_JOB_RUNNING_TIME_METRIC_SUFFIX, new Gauge<Long>() {
+
+                public Long getValue() {
+                    return queueStats.getActiveJobRunningTime();
+                }
+            });
+            gaugeList.put(QUEUE_TOPICS_METRIC_SUFFIX, new Gauge<Long>() {
+
+                public Long getValue() {
+                    return queueStats.getNumberOfTopics();
+                }
+            });
+            gaugeList.put(QUEUE_COUNT_METRIC_SUFFIX, new Gauge<Long>() {
+                @Override
+                public Long getValue() {
+                    return queueStats.getNumberOfConfiguredQueues();
+                }
+            });
+            gaugeList.put(REASSIGNED_METRIC_SUFFIX, new Gauge<Long>() {
+                @Override
+                public Long getValue() {
+                    return queueStats.getNumberOfReassignedJobs();
                 }
             });
         }

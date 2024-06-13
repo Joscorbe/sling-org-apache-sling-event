@@ -95,6 +95,7 @@ public class QueueJobCache {
         this.queueType = queueType;
         this.topics = new ConcurrentSkipListSet<String>(topics);
         this.fillCache(queueName, statisticsManager);
+        statisticsManager.topicsAssignedToQueue(queueName, topics);
     }
 
     /**
@@ -197,6 +198,7 @@ public class QueueJobCache {
                             }
                         } else {
                             statisticsManager.jobDequeued(queue.getName(), handler.getJob().getTopic());
+                            statisticsManager.jobReassigned(queue.getName(), handler.getJob().getTopic());
                             // no consumer on this instance, assign to another instance
                             handler.reassign();
 
